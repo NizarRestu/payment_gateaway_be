@@ -2,8 +2,10 @@ package com.payment.gateaway.service;
 
 import com.payment.gateaway.model.Product;
 import com.payment.gateaway.repository.ProductRepository;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +16,24 @@ import java.util.Optional;
 public class ProductServiceImpl implements ProductService{
     @Autowired
     private ProductRepository productRepository;
+
+    private String convertToBase64Url(MultipartFile file) {
+        String url = "";
+        try {
+            byte[] byteData = Base64.encodeBase64(file.getBytes());
+            String result = new String(byteData);
+            url = "data:" + file.getContentType() + ";base64," + result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return url;
+        }
+
+    }
+
     @Override
-    public Product add(Product product) {
+    public Product add(Product product, MultipartFile multipartFile) {
+        product.setImage(convertToBase64Url(multipartFile));
         return productRepository.save(product);
     }
 
@@ -30,10 +48,12 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public Product edit(Integer id, Product product) {
+    public Product edit(Integer id, Product product, MultipartFile multipartFile) {
         Product update = productRepository.findById(id).get();
         update.setName(product.getName());
         update.setPrice(product.getPrice());
+        update.setDescription(product.getDescription());
+        update.setImage(convertToBase64Url(multipartFile));
         return productRepository.save(update);
     }
 

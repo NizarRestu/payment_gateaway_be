@@ -1,31 +1,15 @@
 package com.payment.gateaway.model;
 
+import java.util.List;
+
 public class TransactionRequest {
-    private String productName;
-    private int quantity;
-    private int price;
+    private List<TransactionRequestItem> items;
 
-    public int getPrice() {
-        return price;
+    public List<TransactionRequestItem> getItems() {
+        return items;
     }
 
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void setItems(List<TransactionRequestItem> items) {
+        this.items = items;
     }
 }

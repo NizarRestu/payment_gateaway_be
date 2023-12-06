@@ -4,6 +4,7 @@ import com.payment.gateaway.model.Product;
 import com.payment.gateaway.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -14,17 +15,17 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @PostMapping("/add")
-    public Product add(@RequestBody Product product){
-        return productService.add(product);
+    @PostMapping( name = "/add" , consumes = "multipart/form-data")
+    public Product add( Product product , @RequestPart("file") MultipartFile multipartFile){
+        return productService.add(product , multipartFile);
     }
     @GetMapping("/{id}")
     public Product get(@PathVariable("id") Integer id){
         return productService.get(id);
     }
-    @PutMapping("/{id}")
-    public Product edit(@PathVariable("id") Integer id, @RequestBody Product product){
-        return productService.edit(id, product);
+    @PutMapping(name = "/{id}" , consumes = "multipart/form-data")
+    public Product edit(@PathVariable("id") Integer id,  Product product ,  @RequestPart("file")MultipartFile multipartFile){
+        return productService.edit(id, product, multipartFile);
     }
     @GetMapping
     public List<Product> getAll(){

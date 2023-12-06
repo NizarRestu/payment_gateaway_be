@@ -15,6 +15,12 @@ public class Product {
     @Column(name = "price")
     private Integer price;
 
+    @Column(name="description")
+    private String Description;
+    @Lob
+    @Column(name = "image")
+    private String image;
+
 
     public Product() {
     }
@@ -43,4 +49,19 @@ public class Product {
         this.price = price;
     }
 
+    public String getDescription() {
+        return Description;
+    }
+
+    public void setDescription(String description) {
+        Description = description;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 }
