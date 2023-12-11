@@ -4,6 +4,10 @@ public class TransactionRequestItem {
     private Integer product_id;
     private int quantity;
 
+    public TransactionRequestItem(Integer product_id, int quantity) {
+        this.product_id = product_id;
+        this.quantity = quantity;
+    }
 
     public Integer getProduct_id() {
         return product_id;
@@ -20,4 +24,6 @@ public class TransactionRequestItem {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+
 }

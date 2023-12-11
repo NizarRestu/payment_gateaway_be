@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +18,21 @@ import java.util.Map;
 public class PaymentController {
 
     @Autowired
-   PaymentService paymentService;
+   private PaymentService paymentService;
 
-    @PostMapping("/payment")
-    public ResponseEntity<Map<String, Object>> createPaymentLinks(@RequestBody List<TransactionRequestItem> items) {
-        try {
-            Map<String, Object> response = paymentService.createPaymentLink(items);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace(); // Handle the exception appropriately
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @PostMapping("/create-payment-link")
+    public Map<String, Object> createPaymentLink(@RequestBody Map<String, Object> request) {
+        List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
+        String promoCode = (String) request.get("promo_code");
+
+        // Transform Map items into a List of TransactionRequestItem
+        List<TransactionRequestItem> transactionRequestItems = new ArrayList<>();
+        for (Map<String, Object> item : items) {
+            Long product_id = Long.parseLong(item.get("product_id").toString());
+            int quantity = Integer.parseInt(item.get("quantity").toString());
+            transactionRequestItems.add(new TransactionRequestItem(Math.toIntExact(product_id), quantity));
         }
+
+        return paymentService.createPaymentLink(transactionRequestItems, promoCode);
     }
 }
