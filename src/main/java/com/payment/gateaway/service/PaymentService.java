@@ -40,6 +40,7 @@ public class PaymentService {
         return java.util.Base64.getEncoder().encodeToString(authBytes);
     }
 
+
     public Map<String, Object> createPaymentLink(List<TransactionRequestItem> items, String promoCode) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -80,49 +81,51 @@ public class PaymentService {
     private Map<String, Object> createPaymentLinkRequest(Product product, TransactionRequestItem item, String promoCode) {
         Map<String, Object> itemDetails = new HashMap<>();
         itemDetails.put("id", String.valueOf(product.getId()));
-        itemDetails.put("price", product.getPrice());
+
+        if (promoCode == null || promoCode.isEmpty()) {
+            itemDetails.put("price", product.getPrice());
+        } else {
+            double discountedPrice = product.getPrice() * (1 - getDiscountPercentageFromMidtrans(promoCode));
+            itemDetails.put("price", discountedPrice);
+        }
+
         itemDetails.put("quantity", item.getQuantity());
         itemDetails.put("name", product.getName());
 
-        // Add promo code to the item details
         itemDetails.put("promo_code", (promoCode != null && !promoCode.isEmpty()) ? promoCode : defaultPromoCode);
-
         return itemDetails;
     }
+
 
     private Map<String, Object> createTransactionDetails(List<TransactionRequestItem> items, List<Map<String, Object>> itemDetailsList, String promoCode) {
         Map<String, Object> transactionDetails = new HashMap<>();
         transactionDetails.put("order_id", UUID.randomUUID().toString());
 
         double totalGrossAmount = 0.0;
-        double totalDiscountAmount = 0.0;
 
         for (TransactionRequestItem item : items) {
             Product product = productRepository.findById(item.getProduct_id()).orElse(null);
 
             if (product != null) {
-                double itemGrossAmount = product.getPrice() * item.getQuantity();
-                totalGrossAmount += itemGrossAmount;
-
-                if (promoCode != null && !promoCode.isEmpty()) {
-                    double discountPercentage = getDiscountPercentageFromMidtrans(promoCode);
-
-                    double itemDiscountAmount = itemGrossAmount * discountPercentage;
-                    totalDiscountAmount += itemDiscountAmount;
+                if (promoCode == null || promoCode.isEmpty()) {
+                    double itemGrossAmount = product.getPrice() * item.getQuantity();
+                    totalGrossAmount += itemGrossAmount;
+                } else {
+                    double discountedPrice = product.getPrice() * (1 - getDiscountPercentageFromMidtrans(promoCode));
+                    double itemGrossAmount = discountedPrice * item.getQuantity();
+                    totalGrossAmount += itemGrossAmount;
                 }
             }
         }
-
-        double grossAmountAfterDiscount = totalGrossAmount - totalDiscountAmount;
-
-        transactionDetails.put("gross_amount", grossAmountAfterDiscount);
+        PromoCode code = promoCodeRepository.findByCode(promoCode);
+        if (code.getMin_transaction() > totalGrossAmount){
+            throw new RuntimeException("Total transaction min " + code.getMin_transaction());
+        }
+        transactionDetails.put("gross_amount", totalGrossAmount);
         transactionDetails.put("item_details", itemDetailsList);
-        transactionDetails.put("discount_amount", totalDiscountAmount);
 
         return transactionDetails;
     }
-
-
 
     private double getDiscountPercentageFromMidtrans(String promoCode) {
         PromoCode code = promoCodeRepository.findByCode(promoCode);
