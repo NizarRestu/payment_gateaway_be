@@ -30,7 +30,9 @@ public class PromoCodeServiceImpl implements PromoCodeService{
         update.setCode(promoCode.getCode());
         update.setDiscount_percentage(promoCode.getDiscount_percentage());
         update.setMin_transaction(promoCode.getMin_transaction());
-        return null;
+        update.setName_sponsor(promoCode.getName_sponsor());
+        update.setMax_transaction(promoCode.getMax_transaction());
+        return promoCodeRepository.save(update);
     }
 
     @Override

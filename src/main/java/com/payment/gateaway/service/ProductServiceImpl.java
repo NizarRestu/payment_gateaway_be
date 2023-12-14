@@ -69,10 +69,4 @@ public class ProductServiceImpl implements ProductService{
         }
 
     }
-    public Optional<Product> getProductById(Integer productId) {
-        return productRepository.findById(productId);
-    }
-    public Optional<Product> getProductByName(String name) {
-        return productRepository.findByName(name);
-    }
 }

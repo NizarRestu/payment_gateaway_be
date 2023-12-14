@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +21,14 @@ public class PaymentController {
     @Autowired
    private PaymentService paymentService;
 
+    private static final String JWT_PREFIX = "jwt ";
+
     @PostMapping("/create-payment-link")
-    public Map<String, Object> createPaymentLink(@RequestBody Map<String, Object> request) {
+    public Map<String, Object> createPaymentLink(@RequestBody Map<String, Object> request , HttpServletRequest requests) {
         List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
         String promoCode = (String) request.get("promo_code");
+
+        String jwtToken = requests.getHeader("auth-tgh").substring(JWT_PREFIX.length());
 
         // Transform Map items into a List of TransactionRequestItem
         List<TransactionRequestItem> transactionRequestItems = new ArrayList<>();
@@ -33,6 +38,6 @@ public class PaymentController {
             transactionRequestItems.add(new TransactionRequestItem(Math.toIntExact(product_id), quantity));
         }
 
-        return paymentService.createPaymentLink(transactionRequestItems, promoCode);
+        return paymentService.createPaymentLink(transactionRequestItems, promoCode , jwtToken);
     }
 }

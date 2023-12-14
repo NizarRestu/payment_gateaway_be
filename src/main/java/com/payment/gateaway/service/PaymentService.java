@@ -3,8 +3,12 @@ package com.payment.gateaway.service;
 import com.payment.gateaway.model.Product;
 import com.payment.gateaway.model.PromoCode;
 import com.payment.gateaway.model.TransactionRequestItem;
+import com.payment.gateaway.model.User;
 import com.payment.gateaway.repository.ProductRepository;
 import com.payment.gateaway.repository.PromoCodeRepository;
+import com.payment.gateaway.repository.UserRepository;
+import com.payment.gateaway.security.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -29,6 +33,12 @@ public class PaymentService {
     @Autowired
     private PromoCodeRepository promoCodeRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Value("${midtrans.promo.code}")
     private String defaultPromoCode;
 
@@ -41,7 +51,7 @@ public class PaymentService {
     }
 
 
-    public Map<String, Object> createPaymentLink(List<TransactionRequestItem> items, String promoCode) {
+    public Map<String, Object> createPaymentLink(List<TransactionRequestItem> items, String promoCode , String jwtToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Basic " + encodeCredentials(serverKey, ""));
@@ -56,11 +66,19 @@ public class PaymentService {
                 itemDetailsList.add(itemDetails);
             }
         }
-
+        Claims claims = jwtUtils.decodeJwt(jwtToken);
+        String email = claims.getSubject();
+        User user = userRepository.findByEmail(email).get();
+        Map<String, Object> customerDetails = new HashMap<>();
+        customerDetails.put("first_name" , user.getName());
+        customerDetails.put("email" , user.getEmail());
+        customerDetails.put("phone" , user.getNo_hp());
+        customerDetails.put("notes" , user.getAddress());
         Map<String, Object> transactionDetails = createTransactionDetails(items, itemDetailsList, promoCode);
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("transaction_details", transactionDetails);
         requestBody.put("item_details", itemDetailsList);
+        requestBody.put("customer_details" , customerDetails);
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
@@ -117,13 +135,18 @@ public class PaymentService {
                 }
             }
         }
-        PromoCode code = promoCodeRepository.findByCode(promoCode);
-        if (code.getMin_transaction() > totalGrossAmount){
-            throw new RuntimeException("Total transaction min " + code.getMin_transaction());
+        if (!promoCode.isEmpty()) {
+            PromoCode code = promoCodeRepository.findByCode(promoCode);
+            if (code.getMin_transaction() > totalGrossAmount) {
+                throw new RuntimeException("Total transaction min " + code.getMin_transaction());
+            } else if (code.getMax_transaction() < totalGrossAmount) {
+                throw new RuntimeException("Total transaction max " + code.getMax_transaction());
+            }
+            transactionDetails.put("gross_amount", totalGrossAmount);
+            transactionDetails.put("item_details", itemDetailsList);
         }
         transactionDetails.put("gross_amount", totalGrossAmount);
         transactionDetails.put("item_details", itemDetailsList);
-
         return transactionDetails;
     }
 
