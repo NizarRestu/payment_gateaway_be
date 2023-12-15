@@ -1,5 +1,7 @@
 package com.payment.gateaway.controller;
 
+import com.payment.gateaway.exception.CommonResponse;
+import com.payment.gateaway.exception.ResponseHelper;
 import com.payment.gateaway.model.PromoCode;
 import com.payment.gateaway.service.PromoCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,23 +17,23 @@ public class PromoCodeController {
     private PromoCodeService promoCodeService;
 
     @PostMapping("/add")
-    public PromoCode add(@RequestBody PromoCode promoCode){
-        return promoCodeService.add(promoCode);
+    public CommonResponse<PromoCode> add(@RequestBody PromoCode promoCode){
+        return ResponseHelper.ok( promoCodeService.add(promoCode));
     }
     @GetMapping("/{id}")
-    public PromoCode get(@PathVariable("id") Integer id){
-        return promoCodeService.get(id);
+    public CommonResponse <PromoCode> get(@PathVariable("id") Integer id){
+        return ResponseHelper.ok( promoCodeService.get(id));
     }
     @GetMapping
-    public List<PromoCode> getAll(){
-      return promoCodeService.getAll();
+    public CommonResponse<List<PromoCode>> getAll(){
+      return ResponseHelper.ok( promoCodeService.getAll());
     }
     @PutMapping("/{id}")
-    public PromoCode put(@PathVariable("id") Integer id , @RequestBody PromoCode promoCode){
-        return promoCodeService.edit(id, promoCode);
+    public CommonResponse<PromoCode> put(@PathVariable("id") Integer id , @RequestBody PromoCode promoCode){
+        return ResponseHelper.ok( promoCodeService.edit(id, promoCode));
     }
     @DeleteMapping("/{id}")
-    public Map<String, Boolean> delete(@PathVariable("id")  Integer id) {
-        return promoCodeService.delete(id);
+    public CommonResponse<?> delete(@PathVariable("id")  Integer id) {
+        return ResponseHelper.ok( promoCodeService.delete(id));
     }
 }

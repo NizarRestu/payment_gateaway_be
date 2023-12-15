@@ -1,5 +1,6 @@
 package com.payment.gateaway.service;
 
+import com.payment.gateaway.exception.NotFoundException;
 import com.payment.gateaway.model.PromoCode;
 import com.payment.gateaway.repository.PromoCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,12 @@ public class PromoCodeServiceImpl implements PromoCodeService{
 
     @Override
     public PromoCode get(Integer id) {
-        return promoCodeRepository.findById(id).get();
+        return promoCodeRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
     }
 
     @Override
     public PromoCode edit(Integer id, PromoCode promoCode) {
-        PromoCode update = promoCodeRepository.findById(id).get();
+        PromoCode update = promoCodeRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
         update.setCode(promoCode.getCode());
         update.setDiscount_percentage(promoCode.getDiscount_percentage());
         update.setMin_transaction(promoCode.getMin_transaction());

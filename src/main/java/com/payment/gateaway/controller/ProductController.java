@@ -1,5 +1,7 @@
 package com.payment.gateaway.controller;
 
+import com.payment.gateaway.exception.CommonResponse;
+import com.payment.gateaway.exception.ResponseHelper;
 import com.payment.gateaway.model.Product;
 import com.payment.gateaway.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,24 +18,24 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping( name = "/add" , consumes = "multipart/form-data")
-    public Product add( Product product , @RequestPart("file") MultipartFile multipartFile){
-        return productService.add(product , multipartFile);
+    public CommonResponse<Product> add(Product product , @RequestPart("file") MultipartFile multipartFile){
+        return ResponseHelper.ok( productService.add(product , multipartFile));
     }
     @GetMapping("/{id}")
-    public Product get(@PathVariable("id") Integer id){
-        return productService.get(id);
+    public CommonResponse<Product> get(@PathVariable("id") Integer id){
+        return ResponseHelper.ok( productService.get(id));
     }
     @PutMapping(name = "/{id}" , consumes = "multipart/form-data")
-    public Product edit(@PathVariable("id") Integer id,  Product product ,  @RequestPart("file")MultipartFile multipartFile){
-        return productService.edit(id, product, multipartFile);
+    public CommonResponse<Product> edit(@PathVariable("id") Integer id,  Product product ,  @RequestPart("file")MultipartFile multipartFile){
+        return ResponseHelper.ok( productService.edit(id, product, multipartFile));
     }
     @GetMapping
-    public List<Product> getAll(){
-        return productService.getAll();
+    public CommonResponse<List<Product>> getAll(){
+        return ResponseHelper.ok( productService.getAll());
     }
     @DeleteMapping("/{id}")
-    public Map<String, Boolean> delete(@PathVariable("id")  Integer id) {
-        return productService.delete(id);
+    public CommonResponse<?> delete(@PathVariable("id")  Integer id) {
+        return ResponseHelper.ok( productService.delete(id));
     }
 
 }

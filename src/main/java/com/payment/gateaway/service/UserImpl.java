@@ -1,5 +1,6 @@
 package com.payment.gateaway.service;
 
+import com.payment.gateaway.exception.NotFoundException;
 import com.payment.gateaway.model.LoginRequest;
 import com.payment.gateaway.model.User;
 import com.payment.gateaway.repository.UserRepository;
@@ -50,7 +51,7 @@ public class UserImpl implements UserService{
             response.put("type_token", "User");
             return response;
         }
-        throw new RuntimeException("Password not found");
+        throw new NotFoundException("Password not found");
     }
 
     @Override
@@ -61,7 +62,7 @@ public class UserImpl implements UserService{
 
     @Override
     public User get(Long id) {
-        return userRepository.findById(id).get();
+        return userRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
     }
 
     @Override
@@ -71,7 +72,7 @@ public class UserImpl implements UserService{
 
     @Override
     public User edit(Long id, User user) {
-        User update = userRepository.findById(id).get();
+        User update = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
         update.setPassword(user.getPassword());
         update.setName(user.getName());
         update.setAddress(user.getAddress());

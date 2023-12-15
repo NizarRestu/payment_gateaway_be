@@ -1,5 +1,6 @@
 package com.payment.gateaway.service;
 
+import com.payment.gateaway.exception.NotFoundException;
 import com.payment.gateaway.model.Product;
 import com.payment.gateaway.repository.ProductRepository;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -39,7 +40,7 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public Product get(Integer id) {
-        return productRepository.findById(id).get();
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
     }
 
     @Override
@@ -49,7 +50,7 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public Product edit(Integer id, Product product, MultipartFile multipartFile) {
-        Product update = productRepository.findById(id).get();
+        Product update = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Id Not Found"));
         update.setName(product.getName());
         update.setPrice(product.getPrice());
         update.setDescription(product.getDescription());

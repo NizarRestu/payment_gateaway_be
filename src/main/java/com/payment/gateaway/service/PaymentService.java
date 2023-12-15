@@ -1,5 +1,8 @@
 package com.payment.gateaway.service;
 
+import com.payment.gateaway.exception.BadRequestException;
+import com.payment.gateaway.exception.InternalErrorException;
+import com.payment.gateaway.exception.NotFoundException;
 import com.payment.gateaway.model.Product;
 import com.payment.gateaway.model.PromoCode;
 import com.payment.gateaway.model.TransactionRequestItem;
@@ -68,7 +71,7 @@ public class PaymentService {
         }
         Claims claims = jwtUtils.decodeJwt(jwtToken);
         String email = claims.getSubject();
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Email Not Found"));
         Map<String, Object> customerDetails = new HashMap<>();
         customerDetails.put("first_name" , user.getName());
         customerDetails.put("email" , user.getEmail());
@@ -92,7 +95,7 @@ public class PaymentService {
             response.put("order_id", responseBody.get("order_id"));
             return response;
         } else {
-            throw new RuntimeException("Failed to create payment link");
+            throw new InternalErrorException("Failed to create payment link");
         }
     }
 
@@ -122,7 +125,7 @@ public class PaymentService {
         double totalGrossAmount = 0.0;
 
         for (TransactionRequestItem item : items) {
-            Product product = productRepository.findById(item.getProduct_id()).orElse(null);
+            Product product = productRepository.findById(item.getProduct_id()).orElseThrow(() -> new NotFoundException("Id Not Found"));;
 
             if (product != null) {
                 if (promoCode == null || promoCode.isEmpty()) {
@@ -138,9 +141,9 @@ public class PaymentService {
         if (!promoCode.isEmpty()) {
             PromoCode code = promoCodeRepository.findByCode(promoCode);
             if (code.getMin_transaction() > totalGrossAmount) {
-                throw new RuntimeException("Total transaction min " + code.getMin_transaction());
+                throw new BadRequestException("Total transaction min " + code.getMin_transaction());
             } else if (code.getMax_transaction() < totalGrossAmount) {
-                throw new RuntimeException("Total transaction max " + code.getMax_transaction());
+                throw new BadRequestException("Total transaction max " + code.getMax_transaction());
             }
             transactionDetails.put("gross_amount", totalGrossAmount);
             transactionDetails.put("item_details", itemDetailsList);

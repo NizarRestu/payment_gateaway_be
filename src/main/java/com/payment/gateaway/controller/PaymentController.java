@@ -1,5 +1,7 @@
 package com.payment.gateaway.controller;
 
+import com.payment.gateaway.exception.CommonResponse;
+import com.payment.gateaway.exception.ResponseHelper;
 import com.payment.gateaway.model.TransactionRequest;
 import com.payment.gateaway.model.TransactionRequestItem;
 import com.payment.gateaway.service.PaymentService;
@@ -24,7 +26,7 @@ public class PaymentController {
     private static final String JWT_PREFIX = "jwt ";
 
     @PostMapping("/create-payment-link")
-    public Map<String, Object> createPaymentLink(@RequestBody Map<String, Object> request , HttpServletRequest requests) {
+    public CommonResponse<?> createPaymentLink(@RequestBody Map<String, Object> request , HttpServletRequest requests) {
         List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
         String promoCode = (String) request.get("promo_code");
 
@@ -38,6 +40,6 @@ public class PaymentController {
             transactionRequestItems.add(new TransactionRequestItem(Math.toIntExact(product_id), quantity));
         }
 
-        return paymentService.createPaymentLink(transactionRequestItems, promoCode , jwtToken);
+        return ResponseHelper.ok(paymentService.createPaymentLink(transactionRequestItems, promoCode , jwtToken));
     }
 }

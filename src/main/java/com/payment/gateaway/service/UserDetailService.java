@@ -1,5 +1,6 @@
 package com.payment.gateaway.service;
 
+import com.payment.gateaway.exception.NotFoundException;
 import com.payment.gateaway.model.User;
 import com.payment.gateaway.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,10 @@ public class UserDetailService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) {
         if (userRepository.existsByEmail(username)){
-            User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("Username not found"));;
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new NotFoundException("Id Not Found"));
             return UserDetail.buildUser(user);
         }
-         throw new RuntimeException("User Not Found with username: " + username);
+         throw new NotFoundException("User Not Found with username: " + username);
     }
 
 }
